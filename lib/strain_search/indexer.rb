@@ -16,6 +16,7 @@ module StrainSearch
             fields: {
               suggest: {
                 type: :completion,
+                analyzer: :pattern,
                 contexts: [
                   {
                     name: :class,

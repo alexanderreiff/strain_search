@@ -30,6 +30,8 @@ module StrainSearch
             # Suggester type
             completion: {
               field: 'name.suggest',
+              # Fuzziness
+              fuzzy: true,
               # Booster
               contexts: autocomplete_contexts(context)
             }
