@@ -11,7 +11,12 @@ module StrainSearch
         dynamic: :strict,
         properties: {
           id: { type: :long },
-          name: { type: :text },
+          name: {
+            type: :text,
+            fields: {
+              suggest: { type: :completion }
+            }
+          },
           class: { type: :keyword },
           city: { type: :keyword },
           origin: { type: :geo_point },

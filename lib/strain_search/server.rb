@@ -5,10 +5,12 @@ require 'json'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'lib/strain_search/indexer'
+require 'lib/strain_search/suggester'
 
 ES         = Elasticsearch::Client.new(url: ENV['ELASTICSEARCH_URL'])
 INDEXER    = StrainSearch::Indexer.new(client: ES)
 INDEX_NAME = INDEXER.index_name
+SUGGESTER  = StrainSearch::Suggester.new(client: ES, index: INDEX_NAME)
 
 # On app start up, re-initialize index
 INDEXER.recreate_index!
@@ -20,5 +22,11 @@ module StrainSearch
   class Server < Sinatra::Base
     configure { register Sinatra::Reloader }
     before { content_type :json }
+
+    # ?q=<search_term>
+    get '/autocomplete' do
+      results = SUGGESTER.autocomplete(params['q'])
+      JSON[data: { terms: results }]
+    end
   end
 end
