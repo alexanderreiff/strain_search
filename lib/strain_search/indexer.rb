@@ -4,6 +4,38 @@ require 'csv'
 
 module StrainSearch
   class Indexer
+    ANALYSIS = {
+      char_filter: {
+        remove_space: {
+          type: :pattern_replace,
+          pattern: '\s+',
+          replacement: '-'
+        },
+        remove_non_word: {
+          type: :pattern_replace,
+          pattern: '[^\w\u00C0-\u017F\-]',
+          replacement: ''
+        }
+      },
+      normalizer: {
+        slugifier: {
+          type: :custom,
+          char_filter: %i[remove_space remove_non_word],
+          filter: %i[lowercase asciifolding]
+        }
+      },
+      analyzer: {
+        slugifier: {
+          type: :custom,
+          char_filter: %i[remove_space remove_non_word],
+          filter: %i[lowercase asciifolding],
+          tokenizer: :keyword
+        }
+      }
+    }.freeze
+
+    INDEX_SETTINGS = { analysis: ANALYSIS }.freeze
+
     DOC_TYPE = :_doc
 
     MAPPING = {
@@ -30,6 +62,10 @@ module StrainSearch
                     precision: '25mi'
                   }
                 ]
+              },
+              slug: {
+                type: :keyword,
+                normalizer: :slugifier
               }
             }
           },
@@ -52,7 +88,10 @@ module StrainSearch
     def recreate_index!
       delete_index! if index_exists?
       @client.indices.create(index: @index_name,
-                             body: { mappings: MAPPING })
+                             body: {
+                               mappings: MAPPING,
+                               settings: INDEX_SETTINGS
+                             })
     end
 
     def populate!

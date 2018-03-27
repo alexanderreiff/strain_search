@@ -4,12 +4,14 @@ require 'elasticsearch'
 require 'json'
 require 'sinatra/base'
 require 'sinatra/reloader'
+require 'lib/strain_search/finder'
 require 'lib/strain_search/indexer'
 require 'lib/strain_search/suggester'
 
 ES         = Elasticsearch::Client.new(url: ENV['ELASTICSEARCH_URL'])
 INDEXER    = StrainSearch::Indexer.new(client: ES)
 INDEX_NAME = INDEXER.index_name
+FINDER     = StrainSearch::Finder.new(client: ES, index: INDEX_NAME)
 SUGGESTER  = StrainSearch::Suggester.new(client: ES, index: INDEX_NAME)
 
 # On app start up, re-initialize index
@@ -33,6 +35,12 @@ module StrainSearch
     get '/search' do
       results = SUGGESTER.search(params['q'], origin: params['lat_lon'], class: params['prefer'])
       JSON[data: { results: results }]
+    end
+
+    get '/strains/:slug' do
+      doc = FINDER.find_by_slug(params[:slug])
+      next 404 unless doc
+      JSON[data: { strain: doc }]
     end
   end
 end
