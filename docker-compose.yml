@@ -1,0 +1,30 @@
+# https://docs.docker.com/compose/extends/
+# The dockerfile has been split into 3 parts to support multiple environments.
+# This file contains just about everything except for host bound ports and volumes
+#
+# Local Dev port and volume settings go in docker-compose.override.yml
+version: '2'
+services:
+  app:
+    build: .
+    command: puma -b tcp://0.0.0.0:4000
+    links:
+      - es
+    ports:
+      - 4000:4000
+    environment:
+      - ELASTICSEARCH_URL=http://es:9200
+    volumes:
+      - './:/app'
+  es:
+    build: docker/es
+    volumes:
+      - './docker/es/tmp/esdata:/usr/share/elasticsearch/data'
+  cerebro:
+    build: docker/cerebro
+    links:
+      - es
+    ports:
+      - 19200:80
+    environment:
+      - ELASTICSEARCH_URL=http://es:9200
