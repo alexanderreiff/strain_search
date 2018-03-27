@@ -8,7 +8,7 @@ module StrainSearch
     end
 
     def autocomplete(term, **context)
-      suggester_response(term, context)
+      suggester_response(term, context, source: false)
         .dig('suggest', 'strain_suggest', 0, 'options')
         &.map { |options| options.dig('text') } || []
     end
@@ -21,9 +21,14 @@ module StrainSearch
 
     private
 
-    def suggester_response(term, context)
+    def suggester_response(term, context, source: true)
       @client.search(index: @index_name,
-                     body: suggest_search_body(term, context))
+                     body: suggest_search_body(term, context)).merge(source_fields(source))
+    end
+
+    def source_fields(source)
+      return {} if source
+      { _source: source }
     end
 
     def suggest_search_body(term, context)
