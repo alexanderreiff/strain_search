@@ -14,7 +14,22 @@ module StrainSearch
           name: {
             type: :text,
             fields: {
-              suggest: { type: :completion }
+              suggest: {
+                type: :completion,
+                contexts: [
+                  {
+                    name: :class,
+                    type: :category,
+                    path: :class
+                  },
+                  {
+                    name: :origin,
+                    type: :geo,
+                    path: :origin,
+                    precision: '25mi'
+                  }
+                ]
+              }
             }
           },
           class: { type: :keyword },

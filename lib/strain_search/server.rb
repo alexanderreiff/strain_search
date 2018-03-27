@@ -23,9 +23,9 @@ module StrainSearch
     configure { register Sinatra::Reloader }
     before { content_type :json }
 
-    # ?q=<search_term>
+    # ?q=<search_term>&lat_lon=<lat_lon>&prefer=(indica|sativa|hybrid)
     get '/autocomplete' do
-      results = SUGGESTER.autocomplete(params['q'])
+      results = SUGGESTER.autocomplete(params['q'], origin: params['lat_lon'], class: params['prefer'])
       JSON[data: { terms: results }]
     end
   end
