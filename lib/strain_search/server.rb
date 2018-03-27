@@ -28,5 +28,11 @@ module StrainSearch
       results = SUGGESTER.autocomplete(params['q'], origin: params['lat_lon'], class: params['prefer'])
       JSON[data: { terms: results }]
     end
+
+    # ?q=<search_term>&lat_lon=<lat_lon>&prefer=(indica|sativa|hybrid)
+    get '/search' do
+      results = SUGGESTER.search(params['q'], origin: params['lat_lon'], class: params['prefer'])
+      JSON[data: { results: results }]
+    end
   end
 end

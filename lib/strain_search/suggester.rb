@@ -13,6 +13,12 @@ module StrainSearch
         &.map { |options| options.dig('text') } || []
     end
 
+    def search(term, **context)
+      suggester_response(term, context)
+        .dig('suggest', 'strain_suggest', 0, 'options')
+        &.map { |options| options.dig('_source') } || []
+    end
+
     private
 
     def suggester_response(term, context)
@@ -33,7 +39,9 @@ module StrainSearch
               # Fuzziness
               fuzzy: true,
               # Booster
-              contexts: autocomplete_contexts(context)
+              contexts: autocomplete_contexts(context),
+              # Result count
+              size: 20
             }
           }
         }
